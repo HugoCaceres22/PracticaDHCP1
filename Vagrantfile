@@ -22,4 +22,4 @@ config.vm.define "c2" do |c2|
 
 
 end # c2
-end # Vagrant.configure
+end # Vagrant.configurea
