@@ -7,6 +7,7 @@ configuration from the server automatically (c2 based on its MAC address).
 ## 2
 In this section, we configure the machines with their corresponding network adapters and IP addresses. This is configured in the vagrantfile, the file that is created at the beginning of the exercise and which allows us to assign IP addresses to the machines as well as the box and many other things. 
 Next, we will install the DHCP service with the command we have configured in our provision_server.sh file (apt-get install -y isc-dhcp-server). We will also create a copy of the dhcp configuration file in case we need to refer to it. We do this with the command “cp /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.bak”.
+
 ---
 
 ## 3
