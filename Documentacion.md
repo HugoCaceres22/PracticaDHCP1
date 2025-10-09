@@ -1,3 +1,64 @@
+## 1
+We will create a DHCP server (server) and two clients (c1 and c2) that will obtain their
+configuration from the server automatically (c2 based on its MAC address).
+
+---
+
+## 2
+In this section, we configure the machines with their corresponding network adapters and IP addresses. This is configured in the vagrantfile, the file that is created at the beginning of the exercise and which allows us to assign IP addresses to the machines as well as the box and many other things. 
+Next, we will install the DHCP service with the command we have configured in our provision_server.sh file (apt-get install -y isc-dhcp-server). We will also create a copy of the dhcp configuration file in case we need to refer to it. We do this with the command “cp /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.bak”.
+---
+
+## 3
+In this section, we have configured all machines to be within the same network (192.168.57.0/24).
+We have also configured the ranges of IP addresses that the server will dynamically distribute, which are 192.168.57.25 to 192.168.57.50. We have also configured the default lease time, the broadcast address, the gateway, the DNS servers, and the domain name. 
+We did this by modifying the file “/etc/dhcp/dhcpd.conf”. 
+This was the result of the command “sudo nano /etc/dhcp/dhcpd.conf”:
+
+default-lease-time 86400;
+max-lease-time 691200;
+option broadcast-address 192.168.57.255;
+option routers 192.168.57.10;
+option domain-name-servers 8.8.8.8, 4.4.4.4;
+option domain-name "micasa.es";
+
+subnet 192.168.57.0 netmask 255.255.255.0 {
+  range 192.168.57.25 192.168.57.50;
+}
+
+In the verification section, we check that the service is correct. 
+vagrant@server:~$ sudo systemctl restart isc-dhcp-server
+vagrant@server:~$ sudo dhcpd -t
+Internet Systems Consortium DHCP Server 4.4.3-P1
+Copyright 2004-2022 Internet Systems Consortium.
+All rights reserved.
+For info, please visit https://www.isc.org/software/dhcp/
+Config file: /etc/dhcp/dhcpd.conf
+Database file: /var/lib/dhcp/dhcpd.leases
+PID file: /var/run/dhcpd.pid
+vagrant@server:~$ sudo dhcpd -d
+Internet Systems Consortium DHCP Server 4.4.3-P1
+Copyright 2004-2022 Internet Systems Consortium.
+All rights reserved.
+For info, please visit https://www.isc.org/software/dhcp/
+Config file: /etc/dhcp/dhcpd.conf
+Database file: /var/lib/dhcp/dhcpd.leases
+PID file: /var/run/dhcpd.pid
+There's already a DHCP server running.
+
+If you think you have received this message due to a bug rather
+than a configuration issue please read the section on submitting
+bugs on either our web page at www.isc.org or in the README file
+before submitting a bug.  These pages explain the proper
+process and the information we find helpful for debugging.
+
+exiting.
+
+---
+
+## 4
+In this section, we are going to configure the c1 machine, which we only need to start up with “vagrant up c1” since all of its configuration is in our vagrant file.
+
 ## 4.1
 Now we can see the results of comands:
 ip a (before running ifup,ifdown and requesting an IP address with dhclient)
@@ -135,3 +196,77 @@ lease 192.168.57.27 {
   hardware ethernet 08:00:27:8d:74:3d;
   client-hostname "c1";
 }
+
+---
+
+## 5
+For this section, we have taken the MAC address “08:00:27:e3:66:90,” which gave us the command "ip a".
+We have modified the “dhcpd.conf” file.We have included the MAC address, lease time requirements, and DNS.
+This is the result of the command “sudo nano /etc/dhcp/dhcpd.conf”:
+
+default-lease-time 86400;
+max-lease-time 691200;
+option broadcast-address 192.168.57.255;
+option routers 192.168.57.10;
+option domain-name-servers 8.8.8.8, 4.4.4.4;
+option domain-name "micasa.es";
+
+subnet 192.168.57.0 netmask 255.255.255.0 {
+  range 192.168.57.25 192.168.57.50;
+}
+host c2 {
+  hardware ethernet 08:00:27:e3:66:90;
+  fixed-address 192.168.57.4;
+  option domain-name-servers 1.1.1.1;
+  default-lease-time 3600;
+}
+
+We have reset the service and in the status command output we can see how it is running.
+vagrant@server:~$ sudo systemctl restart isc-dhcp-server
+vagrant@server:~$ sudo systemctl status isc-dhcp-server
+● isc-dhcp-server.service - LSB: DHCP server
+     Loaded: loaded (/etc/init.d/isc-dhcp-server; generated)
+     Active: active (running) since Thu 2025-10-09 15:58:35 UTC; 8s ago
+       Docs: man:systemd-sysv-generator(8)
+    Process: 3232 ExecStart=/etc/init.d/isc-dhcp-server start (code=exited, status=0/SUCCESS)
+      Tasks: 1 (limit: 2307)
+     Memory: 4.1M
+        CPU: 60ms
+     CGroup: /system.slice/isc-dhcp-server.service
+             └─3245 /usr/sbin/dhcpd -4 -q -cf /etc/dhcp/dhcpd.conf eth2
+
+Oct 09 15:58:32 server systemd[1]: Starting isc-dhcp-server.service - LSB: DHCP server...
+Oct 09 15:58:33 server isc-dhcp-server[3232]: Launching IPv4 server only.
+Oct 09 15:58:33 server dhcpd[3245]: Wrote 0 deleted host decls to leases file.
+Oct 09 15:58:33 server dhcpd[3245]: Wrote 0 new dynamic host decls to leases file.
+Oct 09 15:58:33 server dhcpd[3245]: Wrote 3 leases to leases file.
+Oct 09 15:58:33 server dhcpd[3245]: Server starting service.
+Oct 09 15:58:35 server isc-dhcp-server[3232]: Starting ISC DHCPv4 server: dhcpd.
+Oct 09 15:58:35 server systemd[1]: Started isc-dhcp-server.service - LSB: DHCP server.
+
+We have requested a new IP address with dhclient, and when we run the ip a command, we can see that 
+the IP address “192.168.57.4/24” has been correctly assigned. 
+vagrant@c2:~$ ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:6b:55:2b brd ff:ff:ff:ff:ff:ff
+    altname enp0s3
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic eth0
+       valid_lft 78527sec preferred_lft 78527sec
+3: eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:e3:66:90 brd ff:ff:ff:ff:ff:ff
+    altname enp0s8
+    inet 192.168.57.26/24 brd 192.168.57.255 scope global dynamic eth1
+       valid_lft 78530sec preferred_lft 78530sec
+    inet 192.168.57.4/24 brd 192.168.57.255 scope global secondary dynamic eth1
+       valid_lft 3595sec preferred_lft 3595sec
+
+Finally, we check the DNS in the file “/etc/resolv.conf.”
+vagrant@c2:~$ cat /etc/resolv.conf
+nameserver 1.1.1.1
+nameserver 4.2.2.1
+nameserver 208.67.220.220
+search home micasa.es
