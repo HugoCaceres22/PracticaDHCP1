@@ -1,0 +1,59 @@
+# ==========================================
+# 🚀 Proyecto Vagrant + Visual Studio Code
+# ==========================================
+
+# --- Vagrant ---
+.vagrant/              # Contiene las VMs y datos de VirtualBox (NO subir)
+*.box                  # Cajas descargadas o exportadas
+
+# --- Archivos temporales del sistema ---
+*.log
+*.tmp
+*.bak
+*.swp
+*~
+
+# --- Configuración local ---
+.env
+.env.*
+.DS_Store              # macOS
+Thumbs.db              # Windows
+
+# --- Visual Studio Code ---
+.vscode/               # Configuración local del editor (extensiones, settings)
+.history/              # Historial de extensiones tipo Local History
+
+# --- Archivos de red o provisión ---
+*.retry
+*.pid
+*.sock
+
+# --- SSH / claves ---
+*.pem
+*.key
+*.pub
+id_rsa*
+id_dsa*
+
+# --- Archivos de salida / backups ---
+*.tar
+*.gz
+*.zip
+*.7z
+*.iso
+
+# --- Logs y leases DHCP ---
+/var/lib/dhcp/dhcpd.leases
+*.lease
+
+# --- Archivos de prueba o copias ---
+provision_server.sh.bak
+dhcpd.conf.bak
+
+# --- Archivos específicos de VirtualBox ---
+*.vdi
+*.vmdk
+*.vbox
+*.vbox-prev
+VirtualBox.xml
+VirtualBox.xml-prev
