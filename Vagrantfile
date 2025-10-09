@@ -1,28 +1,32 @@
-# -*- mode: ruby -*-7g
-# vi: set ft=ruby :
-
 Vagrant.configure("2") do |config|
-  config.vm.box = "generic/debian12" # platilla de la máquinaaa
+  # Servidor DHCP
+  config.vm.define "server" do |server|
+    server.vm.box = "generic/debian12"
+    server.vm.hostname = "server"
 
-  config.vm.define "server" do |server| # el segundo server es una variable que se pone al principio del resto de cosas
-      server.vm.hostname = "server"
-      server.vm.network "private_network" , ip: "192.168.56.10"
-      server.vm.network "private_network", ip: "192.168.57.10", virtualbox__intnet: "redinterna1"     
-    #  server.vm.provision "shell" , path:"provision-server.sh"
-end  
+    # Interfaces
+    server.vm.network "private_network", ip: "192.168.56.10" # host-only con Internet
+    server.vm.network "private_network", virtualbox__intnet: "redinterna1", ip: "192.168.57.10"
+    
+    # Provisión
+    server.vm.provision "shell", path: "provision_server.sh"
+  end
 
-config.vm.define "c1" do |c1|
+  # Cliente c1
+  config.vm.define "c1" do |c1|
+    c1.vm.box = "generic/debian12"
     c1.vm.hostname = "c1"
-    #c1.vm.network "private_network" , ip: "192.168.56.20"
-    #c1.vm.provision "shell" , path:"provision-c1.sh"
+    c1.vm.network "private_network", virtualbox__intnet: "redinterna1"
+    c1.vm.provision "shell", path: "provision_c.sh"
+  end
 
-end 
-config.vm.define "c2" do |c2|
+  # Cliente c2
+  config.vm.define "c2" do |c2|
+    c2.vm.box = "generic/debian12"
     c2.vm.hostname = "c2"
-    #c2.vm.network "private_network" , ip: "192.168.56.20"
-    #c2.vm.provision "shell" , path:"provision-c2.sh"
+    c2.vm.network "private_network", virtualbox__intnet: "redinterna1"
+    c2.vm.provision "shell", path: "provision_c.sh"
+  end
+end
 
-
-end # c2
-end # Vagrant
 
