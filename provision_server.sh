@@ -25,7 +25,17 @@ option domain-name "micasa.es";
 
 subnet 192.168.57.0 netmask 255.255.255.0 {
   range 192.168.57.25 192.168.57.50;
+  option broadcast-address 192.168.57.255;
+  option routers 192.168.57.10;
 }
+
+host c2 {
+  hardware ethernet 08:00:27:e3:66:90;
+  fixed-address 192.168.57.4;
+  option domain-name-servers 1.1.1.1;
+  default-lease-time 3600;
+}
+  
 EOT
 
 
